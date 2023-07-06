@@ -98,7 +98,12 @@ class Jogador {
 
             // Verifica alinhamento horizontal
             for (int i = 1; i < tamanho; i++) {
-                if (tabuleiroProprio.getMatriz()[linha][coluna + i] != '-') {
+                if (linha >= 0 && linha < 10 && coluna + i >= 0 && coluna + i < 10) {
+                    if (tabuleiroProprio.getMatriz()[linha][coluna + i] != '-') {
+                        alinhadoHorizontalmente = false;
+                        break;
+                    }
+                } else {
                     alinhadoHorizontalmente = false;
                     break;
                 }
@@ -106,7 +111,12 @@ class Jogador {
 
             // Verifica alinhamento vertical
             for (int i = 1; i < tamanho; i++) {
-                if (tabuleiroProprio.getMatriz()[linha + i][coluna] != '-') {
+                if (linha + i >= 0 && linha + i < 10 && coluna >= 0 && coluna < 10) {
+                    if (tabuleiroProprio.getMatriz()[linha + i][coluna] != '-') {
+                        alinhadoVerticalmente = false;
+                        break;
+                    }
+                } else {
                     alinhadoVerticalmente = false;
                     break;
                 }
@@ -116,6 +126,27 @@ class Jogador {
         }
 
         return true;
+    }
+
+    public boolean verificarEmbarcacaoDestruida(int linha, int coluna) {
+        for (Navio navio : navios) {
+            boolean todasPosicoesAtingidas = true;
+            for (Posicao posicao : navio.getPosicoes()) {
+                int linhaNavio = posicao.getLinha();
+                int colunaNavio = posicao.getColuna();
+                if (linha == linhaNavio && coluna == colunaNavio) {
+                    tabuleiroOponente.marcarPosicao(linhaNavio, colunaNavio, '*');
+                }
+                if (tabuleiroOponente.getMatriz()[linhaNavio][colunaNavio] != '*') {
+                    todasPosicoesAtingidas = false;
+                    break;
+                }
+            }
+            if (todasPosicoesAtingidas) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean todosNaviosDestruidos() {
@@ -133,62 +164,29 @@ class Jogador {
 
     public void realizarJogada(Jogador oponente, int linha, int coluna) {
         char marcador = oponente.getTabuleiroProprio().getMatriz()[linha][coluna];
-        if (marcador == 'N') {
+        if (marcador == 'N' || marcador == 'P' || marcador == 'C' || marcador == 'S') {
             marcador = '*';
+
+            System.out.println("Embarcação atingida.");
+
+            // Verificar se uma única embarcação foi destruída
+            if (oponente.verificarEmbarcacaoDestruida(linha, coluna)) {
+                System.out.println("Uma embarcação foi destruída!");
+            }
+
+            // Verificar se todos os navios do oponente foram destruídos
+            if (oponente.todosNaviosDestruidos()) {
+                System.out.println("\nParabéns, " + getNome() + "! Você destruiu todos os navios do(a) " + oponente.getNome() + " e venceu o jogo.");
+                // Marcar o jogo como finalizado, se necessário
+                // jogoFinalizado = true;
+            }
+
         } else {
             marcador = '#';
+
+            System.out.println("Tiro na água.");
         }
         tabuleiroOponente.marcarPosicao(linha, coluna, marcador);
     }
+
 }
-/*
-public class BatalhaNaval {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Digite o nome do Jogador 1: ");
-        String nomeJogador1 = scanner.next();
-        Jogador jogador1 = new Jogador(nomeJogador1);
-
-        System.out.print("Digite o nome do Jogador 2: ");
-        String nomeJogador2 = scanner.next();
-        Jogador jogador2 = new Jogador(nomeJogador2);
-
-        System.out.println("Jogador 1, posicione seus navios:");
-        jogador1.posicionarNavios();
-
-        System.out.println("Jogador 2, posicione seus navios:");
-        jogador2.posicionarNavios();
-
-        boolean jogoFinalizado = false;
-        Jogador jogadorAtual = jogador1;
-        Jogador oponente = jogador2;
-
-        while (!jogoFinalizado) {
-            System.out.println("\nTabuleiro do(a) " + jogadorAtual.getNome());
-            jogadorAtual.getTabuleiroProprio().exibir();
-
-            System.out.println("\nTabuleiro do(a) " + jogadorAtual.getNome() + " (Oponente)");
-            jogadorAtual.getTabuleiroOponente().exibir();
-
-            System.out.println("\nJogador " + jogadorAtual.getNome() + ", faça sua jogada.");
-            System.out.print("Digite a linha: ");
-            int linha = scanner.nextInt();
-            System.out.print("Digite a coluna: ");
-            int coluna = scanner.nextInt();
-
-            jogadorAtual.realizarJogada(oponente, linha, coluna);
-
-            if (oponente.todosNaviosDestruidos()) {
-                System.out.println("\nParabéns, " + jogadorAtual.getNome() + "! Você venceu o jogo.");
-                jogoFinalizado = true;
-            } else {
-                Jogador temp = jogadorAtual;
-                jogadorAtual = oponente;
-                oponente = temp;
-            }
-        }
-
-        scanner.close();
-    }
-}*/
